@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Movement")]
     public float moveSpeed;
+    public float walkSpeed;
     public float sprintSpeed;
 
     public float groundDrag;
@@ -79,32 +80,39 @@ public class PlayerMovement : MonoBehaviour
 
     private void MovePlayer()
     {
-        //movement direction
         moveDirection = orientation.forward * VerticalInput + orientation.right * horizontalInput;
-       if (grounded)
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
-       if(grounded && Input.GetKey(sprintKey))
-        { 
-                rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+
+        
+        if (grounded)
+        {
+            if (Input.GetKey(sprintKey))
+            {
+                moveSpeed = sprintSpeed * 10f;
+            }
+            else
+            {
+                moveSpeed = walkSpeed * 10f;
+            }
+        }
+        else
+        {
+            moveSpeed = walkSpeed * 10f * airMultiplier;
         }
 
-       //in air
-       else if (!grounded)
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
+        rb.AddForce(moveDirection.normalized * moveSpeed, ForceMode.Force);
     }
 
     private void SpeedControl()
     {
         Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
-        if(flatVel.magnitude > moveSpeed)
+        if (flatVel.magnitude > walkSpeed)
         {
-            Vector3 limitedVel = flatVel.normalized * moveSpeed;
+            Vector3 limitedVel = flatVel.normalized * walkSpeed;
             rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
-
         }
         if (Input.GetKey(sprintKey))
-            {
+        {
             Vector3 limitedVel = flatVel.normalized * sprintSpeed;
             rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
         }
